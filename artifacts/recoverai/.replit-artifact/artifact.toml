@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "RecoverAI Revenue Recovery"
+description = "A production-quality fintech SaaS dashboard that detects failed payments, applies explainable AI recovery recommendations, enforces merchant safety limits, executes deterministic demo actions, and measures recovered revenue."
+version = "1.0.0"
+id = "artifacts/recoverai"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20814
+
+[services.development]
+run = "pnpm --filter @workspace/recoverai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/recoverai", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/recoverai/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20814"
+BASE_PATH = "/"

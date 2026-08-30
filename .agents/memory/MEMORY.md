@@ -1,0 +1,1 @@
+- [OpenAPI/Zod compatibility](openapi-zod-compat.md) — generated integer schemas currently conflict with the workspace’s pinned Zod 3 runtime.

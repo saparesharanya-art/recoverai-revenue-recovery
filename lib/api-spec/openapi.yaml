@@ -1,22 +1,26 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: RecoverAI revenue recovery API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: dashboard
+  - name: payments
+  - name: recovery
+  - name: customers
+  - name: analytics
+  - name: audit
+  - name: settings
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +28,635 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get merchant dashboard
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /payments:
+    get:
+      operationId: getPayments
+      tags: [payments]
+      summary: List at-risk and recovered payments
+      parameters:
+        - $ref: "#/components/parameters/StatusQuery"
+        - $ref: "#/components/parameters/SearchQuery"
+        - $ref: "#/components/parameters/LimitQuery"
+      responses:
+        "200":
+          description: Payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
+  /payments/{id}:
+    get:
+      operationId: getPayment
+      tags: [payments]
+      summary: Get a payment with recovery detail
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Payment detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /customers:
+    get:
+      operationId: getCustomers
+      tags: [customers]
+      summary: List customers
+      parameters:
+        - $ref: "#/components/parameters/SearchQuery"
+        - $ref: "#/components/parameters/LimitQuery"
+      responses:
+        "200":
+          description: Customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Customer"
+  /customers/{id}:
+    get:
+      operationId: getCustomer
+      tags: [customers]
+      summary: Get a customer and payment history
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Customer detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /recovery/cases:
+    get:
+      operationId: getRecoveryCases
+      tags: [recovery]
+      summary: List human review cases
+      parameters:
+        - $ref: "#/components/parameters/StatusQuery"
+      responses:
+        "200":
+          description: Recovery cases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecoveryCase"
+  /recovery/analyze:
+    post:
+      operationId: analyzeRecovery
+      tags: [recovery]
+      summary: Analyze a payment with the recovery agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzeInput"
+      responses:
+        "200":
+          description: AI decision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiDecision"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /recovery/scan:
+    post:
+      operationId: runRecoveryScan
+      tags: [recovery]
+      summary: Analyze eligible payments and execute safe demo actions
+      responses:
+        "200":
+          description: Scan result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanResult"
+  /recovery/actions:
+    post:
+      operationId: createRecoveryAction
+      tags: [recovery]
+      summary: Create a recovery action
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecoveryActionInput"
+      responses:
+        "201":
+          description: Action created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryAction"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /recovery/actions/{id}/approve:
+    post:
+      operationId: approveRecoveryAction
+      tags: [recovery]
+      summary: Approve a human review action
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Approved action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryAction"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /recovery/actions/{id}/reject:
+    post:
+      operationId: rejectRecoveryAction
+      tags: [recovery]
+      summary: Reject a human review action
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Rejected action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryAction"
+  /recovery/actions/{id}/execute:
+    post:
+      operationId: executeRecoveryAction
+      tags: [recovery]
+      summary: Execute an approved recovery action
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Executed action
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryAction"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /recovery/{id}/stop:
+    post:
+      operationId: stopRecovery
+      tags: [recovery]
+      summary: Stop recovery for a payment
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Stopped payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+  /analytics:
+    get:
+      operationId: getAnalytics
+      tags: [analytics]
+      summary: Get recovery analytics
+      responses:
+        "200":
+          description: Analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Analytics"
+  /audit:
+    get:
+      operationId: getAudit
+      tags: [audit]
+      summary: Search audit events
+      parameters:
+        - $ref: "#/components/parameters/SearchQuery"
+        - $ref: "#/components/parameters/EventTypeQuery"
+        - $ref: "#/components/parameters/LimitQuery"
+      responses:
+        "200":
+          description: Audit events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditEvent"
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get merchant safety settings
+      responses:
+        "200":
+          description: Merchant settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MerchantSettings"
+    put:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update merchant safety settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MerchantSettingsUpdate"
+      responses:
+        "200":
+          description: Updated merchant settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MerchantSettings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
 components:
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: number
+    SearchQuery:
+      name: search
+      in: query
+      required: false
+      schema:
+        type: string
+    StatusQuery:
+      name: status
+      in: query
+      required: false
+      schema:
+        type: string
+    EventTypeQuery:
+      name: eventType
+      in: query
+      required: false
+      schema:
+        type: string
+    LimitQuery:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: number
+        minimum: 1
+        maximum: 100
+        default: 50
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
   schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
-
+    Dashboard:
+      type: object
+      required: [metrics, trend, outcomeBreakdown, actionBreakdown, recentActivity]
+      properties:
+        metrics:
+          $ref: "#/components/schemas/DashboardMetrics"
+        trend:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrendPoint"
+        outcomeBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/BreakdownPoint"
+        actionBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/BreakdownPoint"
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditEvent"
+    DashboardMetrics:
+      type: object
+      required: [revenueAtRisk, revenueRecovered, recoveryRate, failedPayments, customersRecovered, pendingReviews, aiActions]
+      properties:
+        revenueAtRisk: { type: number }
+        revenueRecovered: { type: number }
+        recoveryRate: { type: number }
+        failedPayments: { type: number }
+        customersRecovered: { type: number }
+        pendingReviews: { type: number }
+        aiActions: { type: number }
+        recoveredDelta: { type: number }
+        rateDelta: { type: number }
+    TrendPoint:
+      type: object
+      required: [label, atRisk, recovered]
+      properties:
+        label: { type: string }
+        atRisk: { type: number }
+        recovered: { type: number }
+    BreakdownPoint:
+      type: object
+      required: [label, value, count]
+      properties:
+        label: { type: string }
+        value: { type: number }
+        count: { type: number }
+    Customer:
+      type: object
+      required: [id, name, email, lifetimeValue, successfulPayments, failedPayments, status]
+      properties:
+        id: { type: number }
+        name: { type: string }
+        email: { type: string }
+        lifetimeValue: { type: number }
+        successfulPayments: { type: number }
+        failedPayments: { type: number }
+        status: { type: string }
+        avatarColor: { type: string }
+        lastPaymentAt: { type: ["string", "null"], format: date-time }
+    CustomerDetail:
+      allOf:
+        - $ref: "#/components/schemas/Customer"
+        - type: object
+          required: [payments, recoveryHistory]
+          properties:
+            payments:
+              type: array
+              items:
+                $ref: "#/components/schemas/Payment"
+            recoveryHistory:
+              type: array
+              items:
+                $ref: "#/components/schemas/AuditEvent"
+    Payment:
+      type: object
+      required: [id, paymentId, customerId, customerName, customerEmail, amount, currency, failureReason, failedAt, attempts, successfulPayments, lifetimeValue, recoveryProbability, riskLevel, recommendedAction, status, recoveryAttempts, aiConfidence, deterministicOutcome]
+      properties:
+        id: { type: number }
+        paymentId: { type: string }
+        customerId: { type: number }
+        customerName: { type: string }
+        customerEmail: { type: string }
+        avatarColor: { type: string }
+        amount: { type: number }
+        currency: { type: string }
+        failureReason: { type: string }
+        failedAt: { type: string, format: date-time }
+        attempts: { type: number }
+        successfulPayments: { type: number }
+        lifetimeValue: { type: number }
+        recoveryProbability: { type: number }
+        riskLevel: { type: string }
+        recommendedAction: { type: string }
+        status: { type: string }
+        recoveryAttempts: { type: number }
+        aiConfidence: { type: number }
+        deterministicOutcome: { type: string }
+        lastActionAt: { type: ["string", "null"], format: date-time }
+    PaymentDetail:
+      allOf:
+        - $ref: "#/components/schemas/Payment"
+        - type: object
+          required: [timeline, attemptsHistory, aiDecision, safetyChecks, actions, auditHistory]
+          properties:
+            timeline:
+              type: array
+              items:
+                $ref: "#/components/schemas/TimelineEvent"
+            attemptsHistory:
+              type: array
+              items:
+                $ref: "#/components/schemas/PaymentAttempt"
+            aiDecision:
+              oneOf:
+                - $ref: "#/components/schemas/AiDecision"
+                - type: "null"
+            safetyChecks:
+              type: array
+              items:
+                $ref: "#/components/schemas/SafetyCheck"
+            actions:
+              type: array
+              items:
+                $ref: "#/components/schemas/RecoveryAction"
+            auditHistory:
+              type: array
+              items:
+                $ref: "#/components/schemas/AuditEvent"
+    TimelineEvent:
+      type: object
+      required: [timestamp, title, description, actor, tone]
+      properties:
+        timestamp: { type: string, format: date-time }
+        title: { type: string }
+        description: { type: string }
+        actor: { type: string }
+        tone: { type: string }
+    PaymentAttempt:
+      type: object
+      required: [id, attemptedAt, result, method, reason]
+      properties:
+        id: { type: number }
+        attemptedAt: { type: string, format: date-time }
+        result: { type: string }
+        method: { type: string }
+        reason: { type: string }
+    AiDecision:
+      type: object
+      required: [id, paymentId, recoveryProbability, recommendedAction, reasoning, confidence, requiresHumanReview, stoppingReason, model, createdAt]
+      properties:
+        id: { type: number }
+        paymentId: { type: number }
+        recoveryProbability: { type: number }
+        recommendedAction: { type: string }
+        reasoning: { type: string }
+        confidence: { type: number }
+        requiresHumanReview: { type: boolean }
+        stoppingReason: { type: ["string", "null"] }
+        model: { type: string }
+        createdAt: { type: string, format: date-time }
+    SafetyCheck:
+      type: object
+      required: [rule, passed, detail]
+      properties:
+        rule: { type: string }
+        passed: { type: boolean }
+        detail: { type: string }
+    RecoveryCase:
+      type: object
+      required: [id, paymentId, customerName, amount, currency, reason, recommendation, confidence, previousAttempts, nextStep, status, createdAt]
+      properties:
+        id: { type: number }
+        paymentId: { type: number }
+        customerName: { type: string }
+        amount: { type: number }
+        currency: { type: string }
+        reason: { type: string }
+        recommendation: { type: string }
+        confidence: { type: number }
+        previousAttempts: { type: number }
+        nextStep: { type: string }
+        status: { type: string }
+        createdAt: { type: string, format: date-time }
+    RecoveryAction:
+      type: object
+      required: [id, paymentId, type, status, actor, reason, createdAt]
+      properties:
+        id: { type: number }
+        paymentId: { type: number }
+        type: { type: string }
+        status: { type: string }
+        actor: { type: string }
+        reason: { type: string }
+        result: { type: ["string", "null"] }
+        scheduledFor: { type: ["string", "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+        executedAt: { type: ["string", "null"], format: date-time }
+    AnalyzeInput:
+      type: object
+      required: [paymentId]
+      properties:
+        paymentId: { type: number }
+    RecoveryActionInput:
+      type: object
+      required: [paymentId, type]
+      properties:
+        paymentId: { type: number }
+        type: { type: string }
+        reason: { type: string }
+    ScanResult:
+      type: object
+      required: [scanned, analyzed, executed, sentToReview, blocked, recoveredRevenue, events]
+      properties:
+        scanned: { type: number }
+        analyzed: { type: number }
+        executed: { type: number }
+        sentToReview: { type: number }
+        blocked: { type: number }
+        recoveredRevenue: { type: number }
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditEvent"
+    AuditEvent:
+      type: object
+      required: [id, timestamp, eventType, paymentId, customerName, actor, action, result, reason, metadata]
+      properties:
+        id: { type: number }
+        timestamp: { type: string, format: date-time }
+        eventType: { type: string }
+        paymentId: { type: ["number", "null"] }
+        customerName: { type: string }
+        actor: { type: string }
+        action: { type: string }
+        result: { type: string }
+        reason: { type: string }
+        metadata:
+          type: object
+          additionalProperties: true
+    Analytics:
+      type: object
+      required: [metrics, funnel, revenueByAction, aiVsHuman, retryOutcomes]
+      properties:
+        metrics:
+          $ref: "#/components/schemas/AnalyticsMetrics"
+        funnel:
+          type: array
+          items:
+            $ref: "#/components/schemas/FunnelPoint"
+        revenueByAction:
+          type: array
+          items:
+            $ref: "#/components/schemas/BreakdownPoint"
+        aiVsHuman:
+          type: array
+          items:
+            $ref: "#/components/schemas/BreakdownPoint"
+        retryOutcomes:
+          type: array
+          items:
+            $ref: "#/components/schemas/BreakdownPoint"
+    AnalyticsMetrics:
+      type: object
+      required: [revenueAtRisk, revenueRecovered, recoveryRate, averageRecoveryAmount, successfulRetries, failedRetries]
+      properties:
+        revenueAtRisk: { type: number }
+        revenueRecovered: { type: number }
+        recoveryRate: { type: number }
+        averageRecoveryAmount: { type: number }
+        successfulRetries: { type: number }
+        failedRetries: { type: number }
+    FunnelPoint:
+      type: object
+      required: [label, amount, count, percent]
+      properties:
+        label: { type: string }
+        amount: { type: number }
+        count: { type: number }
+        percent: { type: number }
+    MerchantSettings:
+      type: object
+      required: [maxAutomatedRetries, maxAutomatedAmount, minRecoveryProbability, humanApprovalThreshold, automaticRecoveryEnabled, demoMode, razorpayConfigured]
+      properties:
+        maxAutomatedRetries: { type: number, minimum: 0, maximum: 10 }
+        maxAutomatedAmount: { type: number, minimum: 0 }
+        minRecoveryProbability: { type: number, minimum: 0, maximum: 100 }
+        humanApprovalThreshold: { type: number, minimum: 0 }
+        automaticRecoveryEnabled: { type: boolean }
+        demoMode: { type: boolean }
+        razorpayConfigured: { type: boolean }
+    MerchantSettingsUpdate:
+      type: object
+      required: [maxAutomatedRetries, maxAutomatedAmount, minRecoveryProbability, humanApprovalThreshold, automaticRecoveryEnabled, demoMode]
+      properties:
+        maxAutomatedRetries: { type: number, minimum: 0, maximum: 10 }
+        maxAutomatedAmount: { type: number, minimum: 0 }
+        minRecoveryProbability: { type: number, minimum: 0, maximum: 100 }
+        humanApprovalThreshold: { type: number, minimum: 0 }
+        automaticRecoveryEnabled: { type: boolean }
+        demoMode: { type: boolean }

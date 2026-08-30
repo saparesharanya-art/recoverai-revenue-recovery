@@ -1,6 +1,6 @@
-# [Project name]
+# RecoverAI – Intelligent Revenue Recovery Agent
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+RecoverAI helps merchants safely turn failed payments into explainable recovery actions and measurable recovered revenue.
 
 ## Run & Operate
 
@@ -22,23 +22,33 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/recoverai/src/App.tsx` — React application routes and feature screens.
+- `artifacts/recoverai/src/index.css` — RecoverAI visual tokens and responsive UI styles.
+- `artifacts/api-server/src/routes/recoverai.ts` — deterministic recovery agent, safety layer, demo processor, and API routes.
+- `lib/api-spec/openapi.yaml` — source of truth for API contracts.
+- `lib/db/src/schema/index.ts` — PostgreSQL/Drizzle relational schema.
+- `README.md` — product overview, architecture, demo guide, and API map.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The app is demo-safe by default: no real-money actions or external credentials are required to evaluate the workflow.
+- AI recommendations and financial execution are separate; deterministic merchant guardrails always run before an automated action.
+- Demo data and payment outcomes are deterministic so scans are repeatable and metrics remain internally consistent across a run.
+- OpenAPI is the contract source of truth; generated React Query hooks are used by the frontend and generated Zod schemas validate request boundaries.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+The product includes a merchant dashboard, payment and customer profiles, AI recovery scans, human review, analytics, searchable audit trail, and configurable safety settings.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+No additional preferences recorded.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Use Razorpay Test Mode only if the optional adapter is added; never send real-money transactions.
+- Run `pnpm --filter @workspace/api-spec run codegen` after changing the OpenAPI contract.
+- Use the shared proxy path `/api` for API calls; do not hardcode localhost in browser code.
 
 ## Pointers
 

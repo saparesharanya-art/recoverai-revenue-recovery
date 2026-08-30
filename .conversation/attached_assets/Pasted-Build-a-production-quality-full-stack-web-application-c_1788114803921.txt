@@ -1,0 +1,612 @@
+Build a production-quality full-stack web application called:
+
+"RecoverAI – Intelligent Revenue Recovery Agent"
+
+This is a project for the Razorpay AI Builder Internship 2026, Track 3: AI Revenue Recovery.
+
+IMPORTANT:
+Do NOT build a simple landing page, static mockup, or chatbot. Build a functional working prototype with a professional SaaS dashboard, backend, database, AI decision workflow, simulated/test payment recovery actions, metrics, safety controls, and audit trail.
+
+==================================================
+PRODUCT CONCEPT
+==================================================
+
+RecoverAI is an AI-powered revenue recovery platform for merchants.
+
+It detects failed or at-risk payments, analyzes the reason and customer/payment history, estimates the probability of successful recovery, recommends the best recovery action, executes safe bounded actions, and tracks the outcome.
+
+Core workflow:
+
+Payment Failure
+→ Analyze payment + customer context
+→ Calculate recovery probability
+→ AI chooses recovery strategy
+→ Apply safety rules
+→ Execute recovery action
+→ Record result
+→ Update recovered revenue
+→ Add complete audit trail
+
+The product should demonstrate measurable revenue recovery rather than merely explaining AI decisions.
+
+==================================================
+TECH STACK
+==================================================
+
+Use a modern full-stack architecture.
+
+Frontend:
+- React
+- TypeScript
+- Tailwind CSS
+- Modern component library if useful
+- Responsive design
+- Professional SaaS dashboard UI
+
+Backend:
+- Node.js
+- TypeScript
+- Express or an equivalent robust backend framework
+
+Database:
+- PostgreSQL
+- Use a clean relational schema
+
+AI:
+- Build an AI recovery-agent abstraction using an LLM API.
+- Use structured outputs/tool calling where appropriate.
+- The application MUST continue working in DEMO MODE if an AI API key is unavailable.
+- Never expose API keys in frontend code.
+
+Payments:
+- Integrate Razorpay APIs where practical.
+- Use Razorpay TEST MODE only.
+- Never use real-money transactions.
+- If credentials are unavailable, provide a realistic simulated payment environment while keeping the integration architecture ready for Razorpay Test Mode.
+
+Deployment:
+- Make the application deployment-ready.
+
+==================================================
+CORE FEATURES
+==================================================
+
+1. MERCHANT DASHBOARD
+
+Create a polished dashboard showing:
+
+- Total Revenue at Risk
+- Revenue Recovered
+- Recovery Rate
+- Failed Payments
+- Customers Recovered
+- Pending Human Reviews
+- AI Actions Executed
+
+Include charts for:
+- Revenue at risk over time
+- Revenue recovered over time
+- Recovery success/failure
+- Recovery actions by type
+
+Use realistic seeded demo data so the dashboard looks meaningful immediately.
+
+Do NOT use meaningless random numbers that change on every refresh.
+
+==================================================
+2. AT-RISK PAYMENTS
+
+Create a dedicated payments/recovery page.
+
+Display:
+
+- Customer
+- Payment ID
+- Amount
+- Currency
+- Failure reason
+- Failed-at timestamp
+- Customer history
+- Recovery probability
+- Risk level
+- Recommended action
+- Current status
+
+Example statuses:
+
+- At Risk
+- Analyzing
+- Recovery Scheduled
+- Retry Pending
+- Recovered
+- Failed
+- Human Review
+- Stopped
+
+Allow the merchant to open a payment and see its full details.
+
+==================================================
+3. AI RECOVERY AGENT
+
+Create a real agent workflow.
+
+For every eligible failed payment, the agent should analyze:
+
+- Payment amount
+- Failure reason
+- Number of previous attempts
+- Previous successful payments
+- Customer payment history
+- Customer lifetime value
+- Time since failure
+- Previous recovery attempts
+- Merchant-defined safety limits
+
+The agent should produce structured output:
+
+{
+  recovery_probability,
+  recommended_action,
+  reasoning,
+  confidence,
+  requires_human_review,
+  stopping_reason
+}
+
+Possible actions:
+
+- Retry Payment
+- Schedule Retry
+- Send Payment Reminder
+- Offer Alternative Payment Method
+- Escalate to Human
+- Stop Recovery Attempts
+
+Show the AI reasoning in human-readable language.
+
+Example:
+
+"Recovery probability: 87%.
+The previous payment failures were temporary and this customer has successfully completed 8 of 9 previous payments. A retry is recommended after a short delay."
+
+Do NOT claim that an action happened unless the system actually executes it.
+
+==================================================
+4. SAFETY / BOUNDED ACTIONS
+==================================================
+
+This is critical.
+
+The AI must NOT have unlimited control.
+
+Implement merchant-configurable rules:
+
+- Maximum automated retry attempts: 2
+- Maximum automated transaction amount: ₹10,000
+- Minimum recovery probability for automatic retry: 70%
+- High-value payments require human approval
+- Repeated failures automatically stop recovery
+- Payments requiring manual intervention go to Human Review
+
+Before every automated action:
+
+AI recommendation
+→ Safety validation
+→ Action execution
+→ Result
+→ Audit log
+
+If a safety rule blocks an action, clearly explain why.
+
+==================================================
+5. RECOVERY ACTIONS
+==================================================
+
+Implement functional demo actions:
+
+A. Retry Payment
+B. Schedule Retry
+C. Send Reminder
+D. Escalate to Human
+E. Stop Recovery
+
+Actions should update the database and UI.
+
+For demo purposes, create a controlled simulated payment processor.
+
+Example:
+
+Retry payment
+→ processing
+→ success/failure
+→ update payment status
+→ update recovered revenue
+→ create audit event
+
+Make outcomes deterministic for seeded demo payments so the demonstration is repeatable.
+
+Where Razorpay Test Mode is configured, provide the integration layer to use it.
+
+==================================================
+6. HUMAN REVIEW QUEUE
+==================================================
+
+Create a page for cases requiring human intervention.
+
+Display:
+
+- Customer
+- Amount
+- Reason for escalation
+- AI recommendation
+- AI confidence
+- Previous attempts
+- Recommended next step
+
+Allow merchant to:
+
+- Approve action
+- Reject action
+- Stop recovery
+- Mark as resolved
+
+Every human decision must be recorded in the audit trail.
+
+==================================================
+7. AUDIT TRAIL
+==================================================
+
+Create a detailed audit log.
+
+Every important action must create an event.
+
+Examples:
+
+- Payment detected
+- AI analysis started
+- AI recommendation generated
+- Safety rule evaluated
+- Action approved
+- Retry executed
+- Retry succeeded
+- Retry failed
+- Reminder sent
+- Human review requested
+- Human approved action
+- Recovery stopped
+
+Each event should include:
+
+- Timestamp
+- Event type
+- Payment/customer
+- Actor: AI / System / Merchant
+- Action
+- Result
+- Reason
+- Relevant metadata
+
+Create a searchable/filterable audit page.
+
+==================================================
+8. RECOVERY ANALYTICS
+==================================================
+
+Create analytics that demonstrate measurable impact.
+
+Show:
+
+- Total revenue at risk
+- Total revenue recovered
+- Recovery rate
+- Average recovery amount
+- Successful retries
+- Failed retries
+- Revenue recovered by action
+- AI vs human recovery
+- Recovery funnel
+
+Create a clear recovery funnel:
+
+At-Risk Revenue
+→ Eligible Revenue
+→ Recovery Attempted
+→ Successfully Recovered
+
+Make the metrics internally consistent with the database.
+
+==================================================
+9. PAYMENT DETAIL PAGE
+==================================================
+
+When a merchant clicks a payment, show:
+
+Customer information
+Payment information
+Failure reason
+Timeline
+Previous attempts
+AI analysis
+Recovery probability
+Recommended action
+Safety checks
+Recovery actions
+Audit history
+
+Include a clear visual timeline.
+
+==================================================
+10. CUSTOMER PROFILE
+==================================================
+
+Create a customer detail view containing:
+
+- Customer name
+- Email
+- Lifetime value
+- Total successful payments
+- Failed payments
+- Recovery history
+- Current risk/recovery status
+
+==================================================
+11. SETTINGS
+==================================================
+
+Create a merchant settings page.
+
+Allow configuration of:
+
+- Maximum automated retries
+- Maximum automated transaction amount
+- Minimum AI recovery probability
+- Human approval threshold
+- Enable/disable automatic recovery
+- Demo/Test Mode
+
+Show clear warnings around safety-sensitive settings.
+
+==================================================
+12. DEMO MODE
+==================================================
+
+The application must work immediately after installation without requiring external API credentials.
+
+Create seeded demo data with at least:
+
+- 20 customers
+- 50 payment records
+- Multiple failure reasons
+- Successful recoveries
+- Failed recoveries
+- Human-review cases
+- Different recovery probabilities
+- Different payment amounts
+
+Provide a "Run AI Recovery Scan" button.
+
+When clicked:
+
+1. Find eligible failed payments
+2. Analyze them
+3. Generate recommendations
+4. Apply safety rules
+5. Execute eligible demo actions
+6. Update metrics
+7. Create audit events
+
+Show progress clearly in the UI.
+
+==================================================
+13. UI / UX
+==================================================
+
+Make the interface look like a premium modern fintech SaaS product.
+
+Design requirements:
+
+- Clean
+- Professional
+- Minimal
+- Responsive
+- Strong visual hierarchy
+- Excellent typography
+- Accessible components
+- Subtle animations
+- Clear status badges
+- Professional charts
+- Proper loading states
+- Empty states
+- Error states
+- Confirmation dialogs for sensitive actions
+
+Main navigation:
+
+Dashboard
+Payments
+AI Recovery
+Human Review
+Analytics
+Audit Trail
+Customers
+Settings
+
+Create a polished sidebar and top navigation.
+
+The product should feel like a real fintech product, not a student template.
+
+==================================================
+14. LANDING / LOGIN
+==================================================
+
+Create a simple professional landing/login experience.
+
+Explain:
+
+"Recover revenue automatically with AI."
+
+Include a demo login or "Launch Demo" option so evaluators can enter the application immediately.
+
+Do not require real authentication credentials for the demo.
+
+==================================================
+15. DATA MODEL
+==================================================
+
+Create proper database models/tables for at least:
+
+users
+merchants
+customers
+payments
+payment_attempts
+recovery_cases
+ai_decisions
+recovery_actions
+audit_logs
+merchant_settings
+
+Use foreign keys and appropriate indexes.
+
+Do not store important application state only in frontend localStorage.
+
+==================================================
+16. API DESIGN
+==================================================
+
+Create clean backend APIs for:
+
+GET /api/dashboard
+GET /api/payments
+GET /api/payments/:id
+GET /api/customers
+GET /api/customers/:id
+GET /api/recovery/cases
+POST /api/recovery/analyze
+POST /api/recovery/scan
+POST /api/recovery/actions
+POST /api/recovery/actions/:id/approve
+POST /api/recovery/actions/:id/reject
+POST /api/recovery/actions/:id/execute
+POST /api/recovery/:id/stop
+GET /api/audit
+GET /api/analytics
+GET /api/settings
+PUT /api/settings
+
+Use proper validation and error handling.
+
+==================================================
+17. AI ARCHITECTURE
+==================================================
+
+Keep the AI layer modular.
+
+Create a service such as:
+
+RecoveryAgent
+
+Responsibilities:
+
+- analyzePayment()
+- calculateRecoveryProbability()
+- recommendAction()
+- validateSafetyRules()
+- generateExplanation()
+
+The AI should NEVER directly execute unrestricted financial actions.
+
+Use:
+
+AI recommendation
+→ deterministic safety layer
+→ execution engine
+
+Keep the AI and business rules separated.
+
+==================================================
+18. ERROR HANDLING
+==================================================
+
+Handle:
+
+- AI API unavailable
+- Payment API unavailable
+- Database errors
+- Duplicate retry attempts
+- Invalid payment state
+- Exceeded retry limit
+- Safety rule violation
+- Network failures
+
+Never silently fail.
+
+Show useful error messages and record important failures in the audit log.
+
+==================================================
+19. README
+==================================================
+
+Create a professional README.md containing:
+
+- Project overview
+- Problem
+- Solution
+- Key features
+- Architecture
+- AI agent workflow
+- Safety mechanisms
+- Tech stack
+- Database design
+- API overview
+- Demo instructions
+- Environment variables
+- Razorpay Test Mode setup
+- Example recovery workflow
+- Metrics
+- Future improvements
+
+Include an architecture diagram using Mermaid.
+
+==================================================
+20. IMPORTANT DEVELOPMENT RULES
+==================================================
+
+- Write clean maintainable code.
+- Use TypeScript types properly.
+- Avoid hardcoded business logic in UI components.
+- Keep secrets in environment variables.
+- Do not expose API keys.
+- Do not use fake claims about real payments.
+- Clearly label simulated data as Demo/Test Mode.
+- Keep the application functional even without external AI credentials.
+- Do not generate placeholder buttons that do nothing.
+- Every major dashboard action should have a working backend flow.
+- Use realistic seeded data.
+- Make metrics mathematically consistent.
+- Prioritize functionality over excessive visual decoration.
+
+==================================================
+21. FINAL DELIVERABLE
+==================================================
+
+Build the complete working RecoverAI application.
+
+Before finishing:
+
+1. Install dependencies.
+2. Run the application.
+3. Fix build errors.
+4. Fix runtime errors.
+5. Verify database setup.
+6. Verify seeded demo data.
+7. Verify the AI recovery scan.
+8. Verify recovery actions.
+9. Verify safety rules.
+10. Verify audit logging.
+11. Verify dashboard metrics.
+12. Verify responsive UI.
+13. Create README.md.
+14. Make sure the project is ready to push to GitHub and deploy.
+
+Do not stop at generating files. Actually run and test the application and fix errors you encounter.
