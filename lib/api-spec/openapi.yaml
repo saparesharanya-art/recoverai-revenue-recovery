@@ -15,6 +15,7 @@ tags:
   - name: analytics
   - name: audit
   - name: settings
+  - name: notifications
 paths:
   /healthz:
     get:
@@ -33,6 +34,8 @@ paths:
       operationId: getDashboard
       tags: [dashboard]
       summary: Get merchant dashboard
+      parameters:
+        - $ref: "#/components/parameters/RangeQuery"
       responses:
         "200":
           description: Dashboard summary
@@ -240,6 +243,8 @@ paths:
       operationId: getAnalytics
       tags: [analytics]
       summary: Get recovery analytics
+      parameters:
+        - $ref: "#/components/parameters/RangeQuery"
       responses:
         "200":
           description: Analytics
@@ -265,6 +270,48 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/AuditEvent"
+  /notifications:
+    get:
+      operationId: getNotifications
+      tags: [notifications]
+      summary: Get recent merchant notifications
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+  /notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "200":
+          description: Updated notification count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationReadResult"
+  /notifications/{id}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark one notification as read
+      parameters:
+        - $ref: "#/components/parameters/IdPath"
+      responses:
+        "200":
+          description: Updated notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /settings:
     get:
       operationId: getSettings
@@ -331,6 +378,12 @@ components:
         minimum: 1
         maximum: 100
         default: 50
+    RangeQuery:
+      name: range
+      in: query
+      required: false
+      schema:
+        type: string
   responses:
     BadRequest:
       description: Invalid request
@@ -599,6 +652,23 @@ components:
         metadata:
           type: object
           additionalProperties: true
+    Notification:
+      type: object
+      required: [id, type, title, message, timestamp, isRead]
+      properties:
+        id: { type: number }
+        type: { type: string }
+        title: { type: string }
+        message: { type: string }
+        timestamp: { type: string, format: date-time }
+        href: { type: ["string", "null"] }
+        paymentId: { type: ["number", "null"] }
+        isRead: { type: boolean }
+    NotificationReadResult:
+      type: object
+      required: [updated]
+      properties:
+        updated: { type: number }
     Analytics:
       type: object
       required: [metrics, funnel, revenueByAction, aiVsHuman, retryOutcomes]

@@ -1,0 +1,271 @@
+Before adding any new features, perform a COMPLETE FUNCTIONALITY AUDIT of the RecoverAI application.
+
+The UI currently looks good, but several visible controls are not functional. For example, the notification bell and user profile in the top-right do not open anything.
+
+DO NOT redesign the existing UI. Keep the current visual style, layout, typography, colors, and spacing.
+
+==================================================
+1. TOP-RIGHT HEADER
+==================================================
+
+Make every visible header control functional.
+
+NOTIFICATION BELL:
+- Clicking the bell opens a notification dropdown/popover.
+- Show recent system/AI/recovery notifications from actual application data.
+- Examples:
+  - "Payment recovery succeeded"
+  - "3 payments require human review"
+  - "Recovery scan completed"
+  - "Payment retry failed"
+- Show timestamps.
+- Include unread/read state.
+- Add "Mark all as read".
+- Clicking a notification should navigate to the relevant page/payment where appropriate.
+
+USER PROFILE:
+- Clicking the profile/avatar opens a dropdown.
+- Show:
+  - User name
+  - Role
+  - Merchant/workspace
+  - Profile
+  - Settings
+  - Demo Mode status
+  - Sign out
+- Profile should open a functional profile/settings view.
+- Settings should navigate to the existing Settings page.
+- Sign out should work appropriately for the demo authentication flow.
+
+MERCHANT WORKSPACE SELECTOR:
+- If the merchant/workspace selector is clickable, make it functional.
+- Show the current workspace and available demo workspaces.
+- Switching workspace should update the displayed merchant context consistently.
+- If multi-workspace support is not implemented, make it clearly non-interactive rather than pretending it is clickable.
+
+==================================================
+2. AUDIT EVERY BUTTON
+==================================================
+
+Inspect the ENTIRE application for buttons, links, icons, dropdowns, tabs, cards, filters, menus, and clickable elements.
+
+Every element that appears interactive must either:
+
+A. Actually perform its intended action
+
+OR
+
+B. Be changed visually so it does not appear interactive.
+
+Do NOT leave dead buttons.
+
+Check at minimum:
+
+Dashboard:
+- Run Recovery Scan
+- View Queue
+- View Audit
+- date/filter controls
+- clickable metrics/cards
+- recent activity rows
+
+Payments:
+- Search
+- Status filter
+- Payment rows
+- Payment detail navigation
+- Recovery Workspace button
+- pagination if present
+
+Recovery:
+- Run Recovery Scan
+- Recovery case rows
+- action buttons
+- filters
+
+Human Review:
+- Approve
+- Reject
+- case details
+- Stop Recovery if present
+
+Analytics:
+- date range
+- Export Report
+- charts/filters if clickable
+
+Customers:
+- Search
+- customer cards
+- customer detail navigation
+
+Audit Trail:
+- Search
+- event filters
+- audit event details
+
+Settings:
+- all toggles
+- dropdowns
+- save buttons
+- reset buttons
+
+==================================================
+3. BUTTON BEHAVIOR
+==================================================
+
+Do not make buttons merely show a toast saying "Coming soon".
+
+If a feature is visible, implement a useful working behavior.
+
+Examples:
+
+"View Audit"
+→ navigate to Audit Trail filtered for the relevant recent activity.
+
+"View Queue"
+→ navigate to Human Review.
+
+Clicking a payment
+→ open its actual payment detail.
+
+Clicking a customer
+→ open actual customer details.
+
+"Run Recovery Scan"
+→ execute the backend recovery workflow.
+
+"Export Report"
+→ generate a downloadable CSV or JSON report from actual database data.
+
+Search
+→ actually filter the displayed data.
+
+Status filters
+→ actually filter database-backed records.
+
+Settings toggles
+→ save to merchant settings and affect recovery behavior.
+
+==================================================
+4. NAVIGATION
+==================================================
+
+Verify every sidebar navigation item works:
+
+Overview
+Payments
+Recovery
+Human Review
+Analytics
+Customers
+Audit Trail
+Settings
+
+No navigation item should lead to a blank page, broken route, or fake page.
+
+Use proper client-side routing.
+
+==================================================
+5. DROPDOWNS / POPOVERS
+==================================================
+
+Implement proper outside-click behavior.
+
+When a dropdown opens:
+- clicking outside closes it
+- pressing Escape closes it
+- only one relevant popover should be open at a time
+
+Ensure dropdowns do not get clipped by parent containers.
+
+==================================================
+6. LOADING / ERROR STATES
+==================================================
+
+For asynchronous actions:
+
+Show a loading state while the request is running.
+
+If it succeeds:
+- update the UI
+- show a concise success notification
+
+If it fails:
+- show a useful error message
+- do not silently fail
+- create an audit event for important failures
+
+==================================================
+7. DATABASE-BACKED INTERACTIONS
+==================================================
+
+Interactive elements should use the backend/database wherever state matters.
+
+Do not store important application state only in React state or localStorage.
+
+Examples:
+
+notification read status
+settings
+payment status
+recovery actions
+human approvals
+audit events
+
+must persist.
+
+==================================================
+8. RESPONSIVE / ACCESSIBILITY
+==================================================
+
+Make interactive elements usable with:
+
+- mouse
+- keyboard
+- Enter/Space
+- Escape for menus
+- visible focus states
+
+Add appropriate aria-labels to icon-only controls such as:
+
+notification bell
+profile button
+sidebar collapse
+search
+filters
+
+==================================================
+9. FINAL FUNCTIONALITY TEST
+==================================================
+
+After implementing this:
+
+1. Run the application.
+2. Click every sidebar item.
+3. Click notification bell.
+4. Click profile.
+5. Test search.
+6. Test filters.
+7. Open a payment.
+8. Run recovery scan.
+9. Test an AI recovery action.
+10. Test Human Review approve/reject.
+11. Test Settings changes.
+12. Test Export Report.
+13. Test Audit Trail.
+14. Refresh the browser.
+15. Confirm important state persists.
+
+Fix all errors found.
+
+IMPORTANT:
+Do not tell me that a feature is functional unless you actually test it.
+
+At the end, provide a concise list of:
+- previously broken controls
+- controls fixed
+- backend/API changes
+- database changes
+- tests performed
+- remaining issues, if any

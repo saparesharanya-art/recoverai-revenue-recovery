@@ -19,6 +19,10 @@ export const HealthCheckResponse = zod.object({
 /**
  * @summary Get merchant dashboard
  */
+export const GetDashboardQueryParams = zod.object({
+  "range": zod.coerce.string().optional()
+})
+
 export const GetDashboardResponse = zod.object({
   "metrics": zod.object({
   "revenueAtRisk": zod.number(),
@@ -463,6 +467,10 @@ export const StopRecoveryResponse = zod.object({
 /**
  * @summary Get recovery analytics
  */
+export const GetAnalyticsQueryParams = zod.object({
+  "range": zod.coerce.string().optional()
+})
+
 export const GetAnalyticsResponse = zod.object({
   "metrics": zod.object({
   "revenueAtRisk": zod.number(),
@@ -523,6 +531,49 @@ export const GetAuditResponseItem = zod.object({
   "metadata": zod.record(zod.string(), zod.unknown())
 })
 export const GetAuditResponse = zod.array(GetAuditResponseItem)
+
+
+/**
+ * @summary Get recent merchant notifications
+ */
+export const GetNotificationsResponseItem = zod.object({
+  "id": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "message": zod.string(),
+  "timestamp": zod.coerce.date(),
+  "href": zod.string().nullish(),
+  "paymentId": zod.number().nullish(),
+  "isRead": zod.boolean()
+})
+export const GetNotificationsResponse = zod.array(GetNotificationsResponseItem)
+
+
+/**
+ * @summary Mark all notifications as read
+ */
+export const MarkAllNotificationsReadResponse = zod.object({
+  "updated": zod.number()
+})
+
+
+/**
+ * @summary Mark one notification as read
+ */
+export const MarkNotificationReadParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const MarkNotificationReadResponse = zod.object({
+  "id": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "message": zod.string(),
+  "timestamp": zod.coerce.date(),
+  "href": zod.string().nullish(),
+  "paymentId": zod.number().nullish(),
+  "isRead": zod.boolean()
+})
 
 
 /**

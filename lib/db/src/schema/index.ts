@@ -128,6 +128,17 @@ export const merchantSettingsTable = pgTable("merchant_settings", {
   demoMode: boolean("demo_mode").default(true).notNull(),
 });
 
+export const notificationsTable = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  type: text("type").notNull(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  href: text("href"),
+  paymentId: integer("payment_id"),
+  readAt: timestamp("read_at"),
+});
+
 export const insertUserSchema = createInsertSchema(usersTable);
 export const insertMerchantSchema = createInsertSchema(merchantsTable);
 export const insertCustomerSchema = createInsertSchema(customersTable);
@@ -138,6 +149,7 @@ export const insertAiDecisionSchema = createInsertSchema(aiDecisionsTable);
 export const insertRecoveryActionSchema = createInsertSchema(recoveryActionsTable);
 export const insertAuditLogSchema = createInsertSchema(auditLogsTable);
 export const insertMerchantSettingsSchema = createInsertSchema(merchantSettingsTable);
+export const insertNotificationSchema = createInsertSchema(notificationsTable);
 
 export type User = z.infer<typeof insertUserSchema>;
 export type Merchant = z.infer<typeof insertMerchantSchema>;
@@ -149,3 +161,4 @@ export type AiDecision = z.infer<typeof insertAiDecisionSchema>;
 export type RecoveryAction = z.infer<typeof insertRecoveryActionSchema>;
 export type AuditLog = z.infer<typeof insertAuditLogSchema>;
 export type MerchantSettings = z.infer<typeof insertMerchantSettingsSchema>;
+export type Notification = z.infer<typeof insertNotificationSchema>;

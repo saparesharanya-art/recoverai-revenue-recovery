@@ -1,4 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
+import { db } from "@workspace/db";
+import { merchantSettingsTable, notificationsTable } from "@workspace/db/schema";
+import { desc, eq, isNull } from "drizzle-orm";
 import {
   AnalyzeRecoveryBody,
   CreateRecoveryActionBody,
@@ -109,6 +112,17 @@ type RecoveryCaseRecord = {
   nextStep: string;
   status: string;
   createdAt: string;
+};
+
+type NotificationRecord = {
+  id: number;
+  type: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  href: string | null;
+  paymentId: number | null;
+  isRead: boolean;
 };
 
 const router: IRouter = Router();
@@ -222,6 +236,97 @@ const settings = {
   demoMode: true,
   razorpayConfigured: false,
 };
+
+async function hydrateSettings() {
+  const rows = await db.select().from(merchantSettingsTable).where(eq(merchantSettingsTable.merchantId, 1)).limit(1);
+  const stored = rows[0];
+  if (stored) {
+    Object.assign(settings, {
+      maxAutomatedRetries: stored.maxAutomatedRetries,
+      maxAutomatedAmount: Number(stored.maxAutomatedAmount),
+      minRecoveryProbability: Number(stored.minRecoveryProbability),
+      humanApprovalThreshold: Number(stored.humanApprovalThreshold),
+      automaticRecoveryEnabled: stored.automaticRecoveryEnabled,
+      demoMode: stored.demoMode,
+    });
+  } else {
+    await db.insert(merchantSettingsTable).values({
+      merchantId: 1,
+      maxAutomatedRetries: settings.maxAutomatedRetries,
+      maxAutomatedAmount: String(settings.maxAutomatedAmount),
+      minRecoveryProbability: String(settings.minRecoveryProbability),
+      humanApprovalThreshold: String(settings.humanApprovalThreshold),
+      automaticRecoveryEnabled: settings.automaticRecoveryEnabled,
+      demoMode: settings.demoMode,
+    });
+  }
+  return settings;
+}
+let notificationsReady = false;
+
+function formatCurrency(value: number, currency = "INR") {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(value);
+}
+
+function notificationSeeds() {
+  const recoveredPayment = payments.find((payment) => payment.status === "Recovered") ?? payments[0];
+  return [
+    {
+      type: "success",
+      title: "Payment recovery succeeded",
+      message: `${customerFor(recoveredPayment).name}'s ${formatCurrency(recoveredPayment.amount)} payment was recovered.`,
+      timestamp: new Date(seedTime.getTime() - 45 * 60000),
+      href: `/payments/${recoveredPayment.id}`,
+      paymentId: recoveredPayment.id,
+    },
+    {
+      type: "review",
+      title: `${cases.length} payments require human review`,
+      message: "Review the cases that crossed your approval threshold.",
+      timestamp: new Date(seedTime.getTime() - 2 * 3600000),
+      href: "/human-review",
+      paymentId: null,
+    },
+    {
+      type: "scan",
+      title: "Recovery scan completed",
+      message: "The latest scan evaluated eligible payments against merchant guardrails.",
+      timestamp: new Date(seedTime.getTime() - 4 * 3600000),
+      href: "/recovery",
+      paymentId: null,
+    },
+    {
+      type: "warning",
+      title: "Payment retry failed",
+      message: "A controlled retry did not recover the payment; no further action was taken.",
+      timestamp: new Date(seedTime.getTime() - 7 * 3600000),
+      href: `/payments/${payments.find((payment) => payment.deterministicOutcome === "failure")?.id ?? payments[0].id}`,
+      paymentId: payments.find((payment) => payment.deterministicOutcome === "failure")?.id ?? payments[0].id,
+    },
+  ];
+}
+
+async function ensureNotifications() {
+  if (notificationsReady) return;
+  const existing = await db.select({ id: notificationsTable.id }).from(notificationsTable).limit(1);
+  if (!existing.length) {
+    await db.insert(notificationsTable).values(notificationSeeds());
+  }
+  notificationsReady = true;
+}
+
+function publicNotification(row: typeof notificationsTable.$inferSelect): NotificationRecord {
+  return {
+    id: row.id,
+    type: row.type,
+    title: row.title,
+    message: row.message,
+    timestamp: row.timestamp.toISOString(),
+    href: row.href,
+    paymentId: row.paymentId,
+    isRead: Boolean(row.readAt),
+  };
+}
 
 function isoHoursAgo(hours: number) {
   return new Date(seedTime.getTime() - hours * 3600000).toISOString();
@@ -531,18 +636,19 @@ function normalizeStatus(value: string | undefined) {
   return map[value.toLowerCase()] ?? value;
 }
 
-function dashboard() {
+function dashboard(range = "7d") {
   const atRiskPayments = payments.filter((payment) => !["Recovered", "Stopped"].includes(payment.status));
   const revenueAtRisk = atRiskPayments.reduce((sum, payment) => sum + payment.amount, 0);
   const recovered = payments.filter((payment) => payment.status === "Recovered");
   const revenueRecovered = recovered.reduce((sum, payment) => sum + payment.amount, 0);
   const failed = payments.filter((payment) => payment.status === "Failed");
   const reviewCount = cases.filter((item) => item.status === "Pending").length;
-  const trend = ["Aug 05", "Aug 10", "Aug 15", "Aug 20", "Aug 25", "Aug 31"].map((label, index) => ({
-    label,
-    atRisk: [18400, 22100, 19700, 25600, 22900, revenueAtRisk][index],
-    recovered: [6200, 8400, 11200, 14500, 18100, revenueRecovered][index],
-  }));
+  const trendSets: Record<string, Array<[string, number, number]>> = {
+    "7d": [["Aug 26", 18400, 6200], ["Aug 27", 22100, 8400], ["Aug 28", 19700, 11200], ["Aug 29", 25600, 14500], ["Aug 30", 22900, 18100], ["Aug 31", revenueAtRisk, revenueRecovered]],
+    "30d": [["Aug 02", 16100, 4900], ["Aug 08", 19800, 7600], ["Aug 14", 22400, 10100], ["Aug 20", 25600, 14500], ["Aug 26", 24100, 18200], ["Aug 31", revenueAtRisk, revenueRecovered]],
+    "90d": [["Jun 02", 13200, 3700], ["Jun 20", 17100, 6800], ["Jul 08", 21500, 9800], ["Jul 26", 24800, 14100], ["Aug 14", 27600, 19400], ["Aug 31", revenueAtRisk, revenueRecovered]],
+  };
+  const trend = (trendSets[range] ?? trendSets["7d"]).map(([label, atRisk, recoveredValue]) => ({ label, atRisk, recovered: recoveredValue }));
   const actionBreakdown = [
     { label: "Retry payment", value: payments.filter((p) => actions.some((a) => a.paymentId === p.id && a.type === "Retry Payment")).length, count: actions.filter((a) => a.type === "Retry Payment").length },
     { label: "Scheduled", value: actions.filter((a) => a.type === "Schedule Retry").reduce((sum, a) => sum + (payments.find((p) => p.id === a.paymentId)?.amount ?? 0), 0), count: actions.filter((a) => a.type === "Schedule Retry").length },
@@ -572,14 +678,19 @@ function dashboard() {
   };
 }
 
-function analytics() {
+function analytics(range = "30d") {
   const data = dashboard();
-  const eligible = payments.filter((p) => p.recoveryProbability >= settings.minRecoveryProbability);
-  const attempted = payments.filter((p) => p.recoveryAttempts > 0 || actions.some((a) => a.paymentId === p.id));
-  const successful = payments.filter((p) => p.status === "Recovered");
-  const retryActions = actions.filter((a) => a.type === "Retry Payment");
+  const days = range === "7d" ? 7 : range === "90d" ? 90 : 30;
+  const cutoff = seedTime.getTime() - days * 86400000;
+  const scopedPayments = payments.filter((payment) => new Date(payment.failedAt).getTime() >= cutoff);
+  const scopedIds = new Set(scopedPayments.map((payment) => payment.id));
+  const eligible = scopedPayments.filter((p) => p.recoveryProbability >= settings.minRecoveryProbability);
+  const attempted = scopedPayments.filter((p) => p.recoveryAttempts > 0 || actions.some((a) => a.paymentId === p.id));
+  const successful = scopedPayments.filter((p) => p.status === "Recovered");
+  const retryActions = actions.filter((a) => a.type === "Retry Payment" && scopedIds.has(a.paymentId));
   const failedRetries = retryActions.filter((a) => a.result?.includes("failed"));
   const revenueRecovered = successful.reduce((sum, p) => sum + p.amount, 0);
+  const scopedCases = cases.filter((item) => scopedIds.has(item.paymentId));
   return {
     metrics: {
       revenueAtRisk: data.metrics.revenueAtRisk,
@@ -590,19 +701,19 @@ function analytics() {
       failedRetries: failedRetries.length,
     },
     funnel: [
-      { label: "At-risk revenue", amount: data.metrics.revenueAtRisk + revenueRecovered, count: payments.length, percent: 100 },
-      { label: "Eligible revenue", amount: eligible.reduce((sum, p) => sum + p.amount, 0), count: eligible.length, percent: Math.round((eligible.length / payments.length) * 100) },
-      { label: "Recovery attempted", amount: attempted.reduce((sum, p) => sum + p.amount, 0), count: attempted.length, percent: Math.round((attempted.length / payments.length) * 100) },
-      { label: "Successfully recovered", amount: revenueRecovered, count: successful.length, percent: Math.round((successful.length / payments.length) * 100) },
+      { label: "At-risk revenue", amount: scopedPayments.reduce((sum, p) => sum + p.amount, 0), count: scopedPayments.length, percent: 100 },
+      { label: "Eligible revenue", amount: eligible.reduce((sum, p) => sum + p.amount, 0), count: eligible.length, percent: Math.round((eligible.length / Math.max(scopedPayments.length, 1)) * 100) },
+      { label: "Recovery attempted", amount: attempted.reduce((sum, p) => sum + p.amount, 0), count: attempted.length, percent: Math.round((attempted.length / Math.max(scopedPayments.length, 1)) * 100) },
+      { label: "Successfully recovered", amount: revenueRecovered, count: successful.length, percent: Math.round((successful.length / Math.max(scopedPayments.length, 1)) * 100) },
     ],
     revenueByAction: [
       { label: "Retry payment", value: revenueRecovered * 0.68, count: retryActions.length },
       { label: "Scheduled retry", value: revenueRecovered * 0.18, count: actions.filter((a) => a.type === "Schedule Retry").length },
-      { label: "Human-assisted", value: revenueRecovered * 0.14, count: cases.filter((c) => c.status === "Resolved").length },
+      { label: "Human-assisted", value: revenueRecovered * 0.14, count: scopedCases.filter((c) => c.status === "Resolved").length },
     ],
     aiVsHuman: [
       { label: "AI automated", value: revenueRecovered * 0.86, count: successful.length },
-      { label: "Merchant assisted", value: revenueRecovered * 0.14, count: cases.filter((c) => c.status === "Resolved").length },
+      { label: "Merchant assisted", value: revenueRecovered * 0.14, count: scopedCases.filter((c) => c.status === "Resolved").length },
     ],
     retryOutcomes: [
       { label: "Succeeded", value: retryActions.filter((a) => a.result?.includes("succeeded")).length, count: retryActions.filter((a) => a.result?.includes("succeeded")).length },
@@ -651,7 +762,14 @@ function handleError(res: Response, error: unknown) {
   res.status(400).json({ error: message });
 }
 
-router.get("/dashboard", (_req, res) => res.json(dashboard()));
+router.get("/dashboard", async (req, res) => {
+  try {
+    await hydrateSettings();
+    return res.json(dashboard(queryValue(req.query.range) ?? "7d"));
+  } catch (error) {
+    return handleError(res, error);
+  }
+});
 
 router.get("/payments", (req, res) => {
   try {
@@ -673,7 +791,7 @@ router.get("/payments", (req, res) => {
     }
     res.json(result.slice(0, query.limit ?? 50));
   } catch (error) {
-    handleError(res, error);
+    return handleError(res, error);
   }
 });
 
@@ -760,7 +878,9 @@ router.post("/recovery/analyze", (req, res) => {
   }
 });
 
-router.post("/recovery/scan", (_req, res) => {
+router.post("/recovery/scan", async (_req, res) => {
+  try {
+    await hydrateSettings();
   const eligible = payments.filter((payment) => ["At Risk", "Failed"].includes(payment.status));
   const events: AuditRecord[] = [];
   let executed = 0;
@@ -801,7 +921,7 @@ router.post("/recovery/scan", (_req, res) => {
       addAudit(payment, "Safety rule evaluated", "System", decision.recommendedAction, "Blocked", "Automatic recovery is disabled");
     }
   }
-  res.json({
+  return res.json({
     scanned: eligible.length,
     analyzed: eligible.length,
     executed,
@@ -810,6 +930,9 @@ router.post("/recovery/scan", (_req, res) => {
     recoveredRevenue,
     events: events.filter(Boolean),
   });
+  } catch (error) {
+    return handleError(res, error);
+  }
 });
 
 router.post("/recovery/actions", (req, res) => {
@@ -892,7 +1015,10 @@ router.post("/recovery/:id/stop", (req, res) => {
   }
 });
 
-router.get("/analytics", (_req, res) => res.json(analytics()));
+router.get("/analytics", (req, res) => {
+  const range = queryValue(req.query.range) ?? "30d";
+  res.json(analytics(range));
+});
 
 router.get("/audit", (req, res) => {
   try {
@@ -922,16 +1048,69 @@ router.get("/audit", (req, res) => {
   }
 });
 
-router.get("/settings", (_req, res) => res.json(settings));
-
-router.put("/settings", (req, res) => {
+router.get("/notifications", async (_req, res) => {
   try {
-    const update = UpdateSettingsBody.parse(req.body);
-    Object.assign(settings, update);
-    addAudit(null, "Safety settings updated", "Merchant", "Update safety controls", "Saved", "Merchant settings were updated", update);
-    res.json(settings);
+    await ensureNotifications();
+    const rows = await db.select().from(notificationsTable).orderBy(desc(notificationsTable.timestamp));
+    res.json(rows.map(publicNotification));
   } catch (error) {
     handleError(res, error);
+  }
+});
+
+router.post("/notifications/read-all", async (_req, res) => {
+  try {
+    await ensureNotifications();
+    const unread = await db.select({ id: notificationsTable.id }).from(notificationsTable).where(isNull(notificationsTable.readAt));
+    if (unread.length) {
+      await db.update(notificationsTable).set({ readAt: new Date() }).where(isNull(notificationsTable.readAt));
+    }
+    res.json({ updated: unread.length });
+  } catch (error) {
+    handleError(res, error);
+  }
+});
+
+router.post("/notifications/:id/read", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id)) return res.status(400).json({ error: "Notification id must be a number" });
+    await ensureNotifications();
+    await db.update(notificationsTable).set({ readAt: new Date() }).where(eq(notificationsTable.id, id));
+    const rows = await db.select().from(notificationsTable).where(eq(notificationsTable.id, id)).limit(1);
+    if (!rows[0]) return res.status(404).json({ error: "Notification not found" });
+    return res.json(publicNotification(rows[0]));
+  } catch (error) {
+    return handleError(res, error);
+  }
+});
+
+router.get("/settings", async (_req, res) => {
+  try {
+    await hydrateSettings();
+    return res.json(settings);
+  } catch (error) {
+    return handleError(res, error);
+  }
+});
+
+router.put("/settings", async (req, res) => {
+  try {
+    await hydrateSettings();
+    const update = UpdateSettingsBody.parse(req.body);
+    Object.assign(settings, update);
+    await db.update(merchantSettingsTable).set({
+      maxAutomatedRetries: settings.maxAutomatedRetries,
+      maxAutomatedAmount: String(settings.maxAutomatedAmount),
+      minRecoveryProbability: String(settings.minRecoveryProbability),
+      humanApprovalThreshold: String(settings.humanApprovalThreshold),
+      automaticRecoveryEnabled: settings.automaticRecoveryEnabled,
+      demoMode: settings.demoMode,
+    }).where(eq(merchantSettingsTable.merchantId, 1));
+    addAudit(null, "Safety settings updated", "Merchant", "Update safety controls", "Saved", "Merchant settings were updated", update);
+    return res.json(settings);
+  } catch (error) {
+    return handleError(res, error);
   }
 });
 

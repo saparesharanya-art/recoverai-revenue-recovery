@@ -200,6 +200,23 @@ export interface ScanResult {
   events: AuditEvent[];
 }
 
+export interface Notification {
+  id: number;
+  type: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  /** @nullable */
+  href?: string | null;
+  /** @nullable */
+  paymentId?: number | null;
+  isRead: boolean;
+}
+
+export interface NotificationReadResult {
+  updated: number;
+}
+
 export interface AnalyticsMetrics {
   revenueAtRisk: number;
   revenueRecovered: number;
@@ -281,6 +298,12 @@ export type EventTypeQueryParameter = string;
 
 export type LimitQueryParameter = number;
 
+export type RangeQueryParameter = string;
+
+export type GetDashboardParams = {
+range?: RangeQueryParameter;
+};
+
 export type GetPaymentsParams = {
 status?: StatusQueryParameter;
 search?: SearchQueryParameter;
@@ -302,6 +325,10 @@ limit?: LimitQueryParameter;
 
 export type GetRecoveryCasesParams = {
 status?: StatusQueryParameter;
+};
+
+export type GetAnalyticsParams = {
+range?: RangeQueryParameter;
 };
 
 export type GetAuditParams = {
