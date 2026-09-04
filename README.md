@@ -117,3 +117,16 @@ Dashboard and analytics values are calculated from the same server-side payment,
 - Add an optional Replit AI Integration provider with structured tool calling for richer reasoning.
 - Add a Razorpay Test Mode adapter and webhook ingestion.
 - Add scheduled jobs, notification preferences, rate limiting, and idempotency keys.
+## Live Demo
+
+Try the deployed RecoverAI application:
+
+https://recover-ai-revenue-recovery--kathy09.replit.app
+
+## GitHub Repository
+
+https://github.com/saparesharanya-art/recoverai-revenue-recovery
+
+## Disclaimer
+
+RecoverAI is a student-built demonstration project. Payment execution is simulated by default and the application is designed to demonstrate safe, explainable revenue recovery workflows.
