@@ -247,14 +247,20 @@ export interface MerchantSettings {
      * @maximum 10
      */
   maxAutomatedRetries: number;
-  /** @minimum 0 */
+  /**
+     * @minimum 0
+     * @maximum 100000
+     */
   maxAutomatedAmount: number;
   /**
      * @minimum 0
      * @maximum 100
      */
   minRecoveryProbability: number;
-  /** @minimum 0 */
+  /**
+     * @minimum 0
+     * @maximum 100000
+     */
   humanApprovalThreshold: number;
   automaticRecoveryEnabled: boolean;
   demoMode: boolean;
@@ -267,14 +273,20 @@ export interface MerchantSettingsUpdate {
      * @maximum 10
      */
   maxAutomatedRetries: number;
-  /** @minimum 0 */
+  /**
+     * @minimum 0
+     * @maximum 100000
+     */
   maxAutomatedAmount: number;
   /**
      * @minimum 0
      * @maximum 100
      */
   minRecoveryProbability: number;
-  /** @minimum 0 */
+  /**
+     * @minimum 0
+     * @maximum 100000
+     */
   humanApprovalThreshold: number;
   automaticRecoveryEnabled: boolean;
   demoMode: boolean;

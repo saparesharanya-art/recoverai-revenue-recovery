@@ -1,0 +1,135 @@
+FINAL POLISH + FUNCTIONALITY PASS FOR RECOVERAI
+
+Do NOT rebuild the application or change the existing visual design. Keep the current RecoverAI UI, layout, colors, typography, sidebar, cards, charts, and demo data.
+
+I need you to make the existing application fully functional and submission-ready for the AI Revenue Recovery internship track.
+
+Fix and verify ALL of the following:
+
+1. NAVIGATION
+- Every sidebar item must work:
+  Overview
+  Payments
+  Recovery
+  Human Review
+  Analytics
+  Customers
+  Audit Trail
+  Settings
+- Clicking a sidebar item must navigate to the correct page.
+- Add a clear "Back" button/Back to [previous page] wherever a user enters a detail page.
+- Browser back/forward navigation must work correctly.
+
+2. HEADER
+- Notification bell must open a small notifications panel/dropdown with realistic demo notifications.
+- Profile/avatar must open a profile dropdown containing:
+  Profile
+  Workspace
+  Settings
+  Sign out
+- Any clickable top-header controls must actually respond.
+
+3. PAYMENTS
+- Payment rows/cards must be clickable.
+- Clicking a payment opens its detailed payment page.
+- Existing "Re-analyze" button must trigger a visible loading state and then update/show an AI analysis result.
+- "Stop recovery" must work with a confirmation state.
+- Recovery status should update in the UI.
+
+4. RECOVERY
+- "Run recovery scan" must actually run a simulated scan.
+- Show a loading/progress state.
+- After completion, update the scan result and recovery recommendations.
+- Recommendations should include:
+  Retry Payment
+  Schedule Retry
+  Send Payment Reminder
+  Escalate to Human
+  Stop Recovery
+- Each recommendation must have a reason and confidence score.
+
+5. HUMAN REVIEW
+- Approve and Reject buttons must work.
+- When approved/rejected, update the case status immediately.
+- Remove/update the case from the pending queue.
+- Show a small success confirmation/toast.
+
+6. SETTINGS
+- The four Safety Boundary number controls must work correctly:
+  Maximum automated retries
+  Maximum automated amount
+  Minimum recovery probability
+  Human approval threshold
+- Clicking the UP arrow must INCREASE the value.
+- Clicking the DOWN arrow must DECREASE the value.
+- Mouse clicks and keyboard ArrowUp/ArrowDown must behave consistently.
+- Values must be clamped to sensible limits.
+- Fix the current issue where ArrowUp/ArrowDown behavior is reversed.
+- Changes should persist during the demo/session.
+- Toggles for Automatic Recovery and Demo Mode must work.
+
+7. ANALYTICS
+- Charts/cards should display consistent demo data.
+- "Export report" should trigger a realistic demo export/download or visible export confirmation.
+- Analytics should reflect actions taken during the current session where practical.
+
+8. SEARCH/FILTERS
+- Payment/customer search boxes must actually filter visible results.
+- Status filters should work.
+- Empty states should be handled cleanly.
+
+9. AUDIT TRAIL
+- Every important action taken by the user or AI should create an audit entry.
+- Include action, timestamp, affected payment/customer, actor (AI/Human/System), and result.
+
+10. AI EXPLAINABILITY
+The product must clearly demonstrate why AI makes a recovery decision.
+For each AI recommendation show:
+- Recovery probability
+- Failure reason
+- Relevant payment/customer signals
+- Recommended action
+- Short explanation
+- Safety/guardrail check
+
+Use deterministic demo logic. Do NOT require real Razorpay credentials, real payments, or external APIs.
+
+11. UX
+- Add loading states where appropriate.
+- Add success/error toast messages.
+- Disable buttons while an action is processing.
+- Avoid broken links and dead buttons.
+- Make sure there are no console errors.
+- Make sure the application works on desktop and reasonably on smaller screens.
+
+12. DEMO READINESS
+Create a smooth end-to-end demo flow:
+
+Dashboard
+→ Payments
+→ Open failed payment
+→ Re-analyze
+→ View AI decision
+→ Run recovery
+→ See recommendation
+→ Human Review
+→ Approve/Reject
+→ Analytics
+→ Audit Trail
+
+Do NOT replace the current design.
+Do NOT remove existing pages.
+Do NOT introduce unnecessary dependencies.
+First inspect the existing code and identify the relevant components/routes/state logic, then make the smallest necessary changes.
+
+After making changes:
+- Test every navigation item.
+- Test every major button.
+- Test Settings number controls specifically.
+- Test notification/profile dropdowns.
+- Test payment detail navigation.
+- Test recovery scan.
+- Test human approval/rejection.
+- Check for console/runtime errors.
+
+At the end, give me a concise summary of exactly what you fixed and any remaining issues.

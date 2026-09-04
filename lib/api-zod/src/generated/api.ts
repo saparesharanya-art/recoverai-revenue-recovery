@@ -583,19 +583,21 @@ export const getSettingsResponseMaxAutomatedRetriesMin = 0;
 export const getSettingsResponseMaxAutomatedRetriesMax = 10;
 
 export const getSettingsResponseMaxAutomatedAmountMin = 0;
+export const getSettingsResponseMaxAutomatedAmountMax = 100000;
 
 export const getSettingsResponseMinRecoveryProbabilityMin = 0;
 export const getSettingsResponseMinRecoveryProbabilityMax = 100;
 
 export const getSettingsResponseHumanApprovalThresholdMin = 0;
+export const getSettingsResponseHumanApprovalThresholdMax = 100000;
 
 
 
 export const GetSettingsResponse = zod.object({
   "maxAutomatedRetries": zod.number().min(getSettingsResponseMaxAutomatedRetriesMin).max(getSettingsResponseMaxAutomatedRetriesMax),
-  "maxAutomatedAmount": zod.number().min(getSettingsResponseMaxAutomatedAmountMin),
+  "maxAutomatedAmount": zod.number().min(getSettingsResponseMaxAutomatedAmountMin).max(getSettingsResponseMaxAutomatedAmountMax),
   "minRecoveryProbability": zod.number().min(getSettingsResponseMinRecoveryProbabilityMin).max(getSettingsResponseMinRecoveryProbabilityMax),
-  "humanApprovalThreshold": zod.number().min(getSettingsResponseHumanApprovalThresholdMin),
+  "humanApprovalThreshold": zod.number().min(getSettingsResponseHumanApprovalThresholdMin).max(getSettingsResponseHumanApprovalThresholdMax),
   "automaticRecoveryEnabled": zod.boolean(),
   "demoMode": zod.boolean(),
   "razorpayConfigured": zod.boolean()
@@ -609,19 +611,21 @@ export const updateSettingsBodyMaxAutomatedRetriesMin = 0;
 export const updateSettingsBodyMaxAutomatedRetriesMax = 10;
 
 export const updateSettingsBodyMaxAutomatedAmountMin = 0;
+export const updateSettingsBodyMaxAutomatedAmountMax = 100000;
 
 export const updateSettingsBodyMinRecoveryProbabilityMin = 0;
 export const updateSettingsBodyMinRecoveryProbabilityMax = 100;
 
 export const updateSettingsBodyHumanApprovalThresholdMin = 0;
+export const updateSettingsBodyHumanApprovalThresholdMax = 100000;
 
 
 
 export const UpdateSettingsBody = zod.object({
   "maxAutomatedRetries": zod.number().min(updateSettingsBodyMaxAutomatedRetriesMin).max(updateSettingsBodyMaxAutomatedRetriesMax),
-  "maxAutomatedAmount": zod.number().min(updateSettingsBodyMaxAutomatedAmountMin),
+  "maxAutomatedAmount": zod.number().min(updateSettingsBodyMaxAutomatedAmountMin).max(updateSettingsBodyMaxAutomatedAmountMax),
   "minRecoveryProbability": zod.number().min(updateSettingsBodyMinRecoveryProbabilityMin).max(updateSettingsBodyMinRecoveryProbabilityMax),
-  "humanApprovalThreshold": zod.number().min(updateSettingsBodyHumanApprovalThresholdMin),
+  "humanApprovalThreshold": zod.number().min(updateSettingsBodyHumanApprovalThresholdMin).max(updateSettingsBodyHumanApprovalThresholdMax),
   "automaticRecoveryEnabled": zod.boolean(),
   "demoMode": zod.boolean()
 })
@@ -630,19 +634,21 @@ export const updateSettingsResponseMaxAutomatedRetriesMin = 0;
 export const updateSettingsResponseMaxAutomatedRetriesMax = 10;
 
 export const updateSettingsResponseMaxAutomatedAmountMin = 0;
+export const updateSettingsResponseMaxAutomatedAmountMax = 100000;
 
 export const updateSettingsResponseMinRecoveryProbabilityMin = 0;
 export const updateSettingsResponseMinRecoveryProbabilityMax = 100;
 
 export const updateSettingsResponseHumanApprovalThresholdMin = 0;
+export const updateSettingsResponseHumanApprovalThresholdMax = 100000;
 
 
 
 export const UpdateSettingsResponse = zod.object({
   "maxAutomatedRetries": zod.number().min(updateSettingsResponseMaxAutomatedRetriesMin).max(updateSettingsResponseMaxAutomatedRetriesMax),
-  "maxAutomatedAmount": zod.number().min(updateSettingsResponseMaxAutomatedAmountMin),
+  "maxAutomatedAmount": zod.number().min(updateSettingsResponseMaxAutomatedAmountMin).max(updateSettingsResponseMaxAutomatedAmountMax),
   "minRecoveryProbability": zod.number().min(updateSettingsResponseMinRecoveryProbabilityMin).max(updateSettingsResponseMinRecoveryProbabilityMax),
-  "humanApprovalThreshold": zod.number().min(updateSettingsResponseHumanApprovalThresholdMin),
+  "humanApprovalThreshold": zod.number().min(updateSettingsResponseHumanApprovalThresholdMin).max(updateSettingsResponseHumanApprovalThresholdMax),
   "automaticRecoveryEnabled": zod.boolean(),
   "demoMode": zod.boolean(),
   "razorpayConfigured": zod.boolean()

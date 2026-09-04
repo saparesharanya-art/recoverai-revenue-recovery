@@ -1,0 +1,329 @@
+We are finishing the RecoverAI Revenue Recovery project for an AI Revenue Recovery internship challenge.
+
+IMPORTANT:
+Do NOT redesign the existing UI.
+Do NOT replace the current pages or visual style.
+Keep the existing RecoverAI branding, layout, colors, typography, sidebar, cards, tables and overall design.
+
+Your job is to make the existing application fully functional and demo-ready.
+
+FIRST: inspect the entire existing codebase and understand the current routing, components, state management and data flow before changing anything.
+
+PROJECT GOAL:
+RecoverAI is an AI-powered revenue recovery workspace that detects failed payments, analyzes recovery probability, recommends the safest recovery action, and allows human review when needed.
+
+MAKE THESE FEATURES FULLY FUNCTIONAL:
+
+1. GLOBAL NAVIGATION
+- Every sidebar item must work:
+  Overview
+  Payments
+  Recovery
+  Human Review
+  Analytics
+  Customers
+  Audit Trail
+  Settings
+- Clicking a sidebar item must navigate to the correct page.
+- Active sidebar item must update correctly.
+- Browser back/forward navigation should work.
+- Add a clear back button/breadcrumb on detail pages where appropriate.
+- Do not create dead links.
+
+2. TOP BAR
+Make the notification bell functional.
+- Clicking it should open a small notification panel/dropdown.
+- Show realistic demo notifications such as:
+  "3 payments require review"
+  "Recovery scan completed"
+  "₹12,499 recovered today"
+- Clicking outside should close the panel.
+
+Make the profile/avatar functional.
+- Clicking the profile area should open a dropdown.
+- Include:
+  Profile
+  Workspace
+  Settings
+  Sign out
+- These should either work or navigate to the appropriate existing page.
+
+3. OVERVIEW DASHBOARD
+Keep the current dashboard design.
+
+Make "Run recovery scan" functional.
+When clicked:
+- Show a loading state for a short period.
+- Then update the dashboard with scan results.
+- Show a success message such as "Recovery scan completed".
+- Update recent activity.
+- Update recovery/review counts.
+- The behavior must be deterministic in demo mode.
+
+Dashboard metrics should be calculated from the application's demo payment data instead of being unrelated hardcoded numbers wherever practical.
+
+4. PAYMENTS
+The Payments page must be interactive.
+
+- Search payments by customer/payment ID.
+- Status filter must work.
+- Clicking a payment opens its payment detail page.
+- Payment detail page must show:
+  customer
+  amount
+  failure reason
+  attempts
+  recovery probability
+  recommended action
+  timeline
+  safety checks
+  audit information
+
+Buttons such as:
+- Re-analyze
+- Retry Payment
+- Schedule Retry
+- Send Reminder
+- Stop Recovery
+
+must actually perform demo actions and update state.
+
+5. AI RECOVERY ENGINE
+Implement a deterministic demo decision engine.
+
+For every failed payment, calculate/select:
+- recovery probability
+- recommended action
+- confidence
+- reason/explanation
+- whether human approval is required
+
+Possible actions:
+- Retry Payment
+- Schedule Retry
+- Send Payment Reminder
+- Escalate to Human
+- Stop Recovery
+
+Use the payment's amount, failure reason, previous attempts and customer history as signals.
+
+The AI does NOT need to call an external LLM/API.
+Use a transparent deterministic rules/scoring system so the demo is reliable.
+
+Example:
+- high probability + low amount + safe failure reason → Retry Payment
+- medium probability → Schedule Retry or Reminder
+- low probability / high risk / above approval threshold → Human Review
+- excessive attempts → Stop Recovery
+
+Every AI decision must have an understandable explanation.
+
+6. HUMAN REVIEW
+Make the Human Review page fully functional.
+
+Each review case must have:
+- customer
+- amount
+- reason
+- recommended action
+- confidence
+- explanation
+
+Buttons:
+- Approve
+- Reject
+- View payment
+
+When Approve is clicked:
+- update the case status
+- remove/update it from pending review
+- add an entry to Audit Trail
+- add a recent activity event
+- update relevant dashboard metrics
+
+When Reject is clicked:
+- update the case
+- add an audit event
+- prevent the action from executing
+
+Show a visible confirmation/toast after actions.
+
+7. SETTINGS
+Fix ALL numeric controls.
+
+The Safety Boundaries fields must have controlled increment/decrement behavior.
+
+Required fields:
+- Maximum automated retries
+- Maximum automated amount
+- Minimum recovery probability
+- Human approval threshold
+
+Rules:
+- Values must never go below their minimum.
+- Values must never exceed their maximum.
+- Arrow Up must INCREASE the value.
+- Arrow Down must DECREASE the value.
+- Mouse spinner controls must behave correctly.
+- Keyboard ArrowUp/ArrowDown must behave correctly.
+- Manual typing should be validated.
+- Values must persist after changing pages.
+
+Use sensible limits:
+Maximum automated retries: 0–10
+Maximum automated amount: 0–100000
+Minimum recovery probability: 0–100
+Human approval threshold: 0–100000
+
+IMPORTANT:
+There must NOT be reversed ArrowUp/ArrowDown behavior.
+
+8. RECOVERY MODE SETTINGS
+Make these toggles functional:
+- Automatic recovery
+- Demo mode
+
+Their state must persist during navigation.
+
+If Demo Mode is enabled:
+- Never send real messages.
+- Never process real payments.
+- All actions should use deterministic mock/demo behavior.
+
+9. RECOVERY WORKSPACE
+Make "Run recovery scan" functional.
+
+After scanning:
+- process the demo failed payments
+- generate AI recommendations
+- classify payments
+- send appropriate cases to Human Review when thresholds require it
+- update scan statistics
+- update Recovery page data
+- add audit entries
+
+Show clear states:
+Idle → Scanning → Scan Complete.
+
+10. ANALYTICS
+The Analytics page should use the same underlying demo data/state.
+
+Show calculated metrics such as:
+- Revenue recovered
+- Recovery rate
+- Average recovery
+- Successful retries
+- Recovery funnel
+- Revenue by action
+- AI vs human-assisted outcomes
+- Retry outcomes
+
+Charts should reflect the application data and update after demo actions.
+
+11. CUSTOMERS
+Customers page:
+- Search customers.
+- Clicking a customer opens their detail view.
+- Show:
+  lifetime value
+  payment count
+  failed payments
+  recent payment history
+  recovery history
+
+12. AUDIT TRAIL
+Every important action should create an audit event.
+
+Examples:
+- Recovery scan completed
+- AI recommendation generated
+- Retry payment
+- Scheduled retry
+- Payment reminder
+- Human review approved
+- Human review rejected
+- Recovery stopped
+- Settings changed
+
+Each event should include:
+- action
+- actor (AI/System/Merchant)
+- customer/payment when relevant
+- timestamp
+- explanation/reason
+
+13. TOASTS / FEEDBACK
+Add consistent success/error/info toast messages for important actions.
+
+Examples:
+"Recovery scan completed"
+"Payment retry simulated successfully"
+"Recovery scheduled"
+"Case approved"
+"Case rejected"
+"Recovery stopped"
+"Settings saved"
+
+14. STATE MANAGEMENT
+Do NOT rely on each page having separate fake data.
+
+Create/use a shared application state/store for:
+- payments
+- customers
+- recovery cases
+- audit events
+- settings
+- notifications
+- analytics
+
+When an action happens on one page, other pages should reflect the change.
+
+15. DEMO DATA
+Keep realistic Indian demo data:
+₹ amounts
+Indian customer names
+realistic payment failure reasons
+realistic timestamps
+
+Do not use real people's personal information.
+
+16. ERROR HANDLING
+No button should silently do nothing.
+No navigation item should be dead.
+No console errors.
+No broken routes.
+No React warnings caused by missing keys or invalid state.
+
+17. RESPONSIVENESS
+Keep the existing desktop dashboard as the priority, but make sure the layout does not break on smaller screens.
+
+18. FINAL QA
+After implementing everything:
+- Run/build the application.
+- Test every route.
+- Test sidebar navigation.
+- Test browser back.
+- Test notification dropdown.
+- Test profile dropdown.
+- Test all payment actions.
+- Test recovery scan.
+- Test approve/reject.
+- Test settings ArrowUp/ArrowDown.
+- Test search/filter.
+- Test audit logging.
+- Test analytics updates.
+- Fix any runtime errors.
+
+VERY IMPORTANT:
+Do not create unnecessary new pages.
+Do not redesign the interface.
+Do not remove existing functionality.
+Preserve the current visual quality.
+
+The final result should feel like a polished working AI Revenue Recovery SaaS product, not a static UI prototype.
+
+When finished, give me a concise summary of:
+1. What was implemented
+2. What was fixed
+3. Any remaining limitations
+4. How to demonstrate the project in 5 minutes

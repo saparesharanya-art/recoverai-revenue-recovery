@@ -714,9 +714,9 @@ components:
       required: [maxAutomatedRetries, maxAutomatedAmount, minRecoveryProbability, humanApprovalThreshold, automaticRecoveryEnabled, demoMode, razorpayConfigured]
       properties:
         maxAutomatedRetries: { type: number, minimum: 0, maximum: 10 }
-        maxAutomatedAmount: { type: number, minimum: 0 }
+        maxAutomatedAmount: { type: number, minimum: 0, maximum: 100000 }
         minRecoveryProbability: { type: number, minimum: 0, maximum: 100 }
-        humanApprovalThreshold: { type: number, minimum: 0 }
+        humanApprovalThreshold: { type: number, minimum: 0, maximum: 100000 }
         automaticRecoveryEnabled: { type: boolean }
         demoMode: { type: boolean }
         razorpayConfigured: { type: boolean }
@@ -725,8 +725,8 @@ components:
       required: [maxAutomatedRetries, maxAutomatedAmount, minRecoveryProbability, humanApprovalThreshold, automaticRecoveryEnabled, demoMode]
       properties:
         maxAutomatedRetries: { type: number, minimum: 0, maximum: 10 }
-        maxAutomatedAmount: { type: number, minimum: 0 }
+        maxAutomatedAmount: { type: number, minimum: 0, maximum: 100000 }
         minRecoveryProbability: { type: number, minimum: 0, maximum: 100 }
-        humanApprovalThreshold: { type: number, minimum: 0 }
+        humanApprovalThreshold: { type: number, minimum: 0, maximum: 100000 }
         automaticRecoveryEnabled: { type: boolean }
         demoMode: { type: boolean }
